@@ -16,7 +16,7 @@ namespace DotNetAutoInstallerTestWinApp
         {          
             new DotNetAutoInstaller.AutoInstaller()
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployTextFile("DotNetAutoInstallerTestWinApp.exe.config")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .RebootOnFirstExecution();
 
             Application.EnableVisualStyles();

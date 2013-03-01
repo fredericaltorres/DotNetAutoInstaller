@@ -15,7 +15,7 @@ assemblies dependencies and text file, include the application config file
         {          
             new DotNetAutoInstaller.AutoInstaller()
                 .DeployAssemblies("Newtonsoft.Json.dll")
-                .DeployTextFile("DotNetAutoInstallerTestWinApp.exe.config")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .RebootOnFirstExecution();
 
             Application.EnableVisualStyles();
@@ -24,8 +24,8 @@ assemblies dependencies and text file, include the application config file
         }
 
 # Road map
-- Deploy assemblies dependencies in a non local folder
-- Detect execution on the Desktop. Warn user.
+- Deploy assemblies dependencies in a non local folder if requested programmatically or
+  if no write access locally.
 - Do not deploy assemblies locally if the application is executing from the Desktop.
 - Support NT Service with auto registration on the first execution.
 

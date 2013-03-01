@@ -244,7 +244,7 @@ namespace DotNetAutoInstaller
             DeployAssemblies(AssemblyLocation.LocalFolder, assemblyFilenames);
             return this;
         }
-        public AutoInstaller DeployTextFile(params string[] textFiles)
+        public AutoInstaller DeployFiles(params string[] textFiles)
         {
             DS.Resources.SaveBinaryResourceAsFiles(Assembly.GetExecutingAssembly(), GetAssemblyPath(), textFiles);
             return this;
