@@ -6,7 +6,7 @@ DotNetAutoInstaller.cs is a C# class to create auto installable C# Console and
 Windows application.
 
 By simply executing the application the first time, the application auto extract
-assemblies dependencies and text file, include the application config file
+assemblies dependencies and other files, including the application config file.
 
 # Syntax
 
