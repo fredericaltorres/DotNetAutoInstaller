@@ -14,7 +14,7 @@ assemblies dependencies and text file, include the application config file
         static void Main()  
         {          
             new DotNetAutoInstaller.AutoInstaller()
-                .DeployAssemblies("Newtonsoft.Json.dll")
+                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .RebootOnFirstExecution();
 
