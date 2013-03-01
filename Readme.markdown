@@ -15,8 +15,7 @@ assemblies dependencies and text file, include the application config file
         {          
             new DotNetAutoInstaller.AutoInstaller()
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
-                .RebootOnFirstExecution();
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
