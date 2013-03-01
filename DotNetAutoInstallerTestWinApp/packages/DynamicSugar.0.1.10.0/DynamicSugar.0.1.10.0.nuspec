@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>DynamicSugar</id>
+    <version>0.1.10.0</version>
+    <title>DynamicSugar</title>
+    <authors>Frederic Torres</authors>
+    <owners>Frederic Torres</owners>
+    <projectUrl>http://www.dynamicsugar.net/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The Dynamic Sugar Library provides methods, functions and classes inspired by the dynamic languages Python and JavaScript to write more readable code in C#</description>
+    <summary>The Dynamic Sugar Library provides methods, functions and classes inspired by the dynamic languages Python and JavaScript to write more readable code in C#</summary>
+    <tags>C#.NET Dynamic Python JavaScript</tags>
+    <references>
+      <reference file="DynamicSugar.dll" />
+    </references>
+  </metadata>
+</package>
