@@ -25,7 +25,7 @@ namespace DotNetAutoInstallerTestWinApp
             {
                 var o = JObject.Parse(this.txtJSON.Text);
                 System.Windows.Forms.MessageBox.Show("Valid JSON");
-                var b = System.IO.File.Exists(Path.Combine(DotNetAutoInstaller.AutoInstaller.GetApplicationDataFolder(), @"Help\Help.markdown"));
+                var b = System.IO.File.Exists(Path.Combine(DotNetAutoInstaller.AutoInstaller.ApplicationDataFolder, @"Help\Help.markdown"));
               
                 if(!b)
                 {

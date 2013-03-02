@@ -46,11 +46,11 @@ namespace DotNetAutoInstaller
     };
 
     /// <summary>
-    /// 
+    /// The class that drive the auto installation
     /// </summary>
     internal class AutoInstaller
     {
-        private bool _firstExecution = false;
+        private bool _firstExecution                = false;
         
         public static Locations AssemblyLocation    = Locations.ApplicationData;
         public static Locations DataLocation        = Locations.ApplicationData;
@@ -62,20 +62,23 @@ namespace DotNetAutoInstaller
                 System.IO.Directory.CreateDirectory(p);
             return p;
         }
-        private static string GetAssemblyPath()
+        private static string AssemblyPath
         {
-            var p = GetExecutableFolder();
-            switch(AssemblyLocation)
+            get
             {
-                case Locations.ApplicationData: p = Path.Combine(GetApplicationDataFolder(), "Bin"); break;
-                case Locations.LocalFolder:     p = GetExecutableFolder(); break;
+                var p = AutoInstaller.ExecutableFolder;
+                switch(AssemblyLocation)
+                {
+                    case Locations.ApplicationData: p = Path.Combine(AutoInstaller.ApplicationDataFolder, "Bin"); break;
+                    case Locations.LocalFolder:     p = AutoInstaller.ExecutableFolder; break;
+                }
+                return CreateDir(p);
             }
-            return CreateDir(p);
         }
         static Assembly __AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var assemblyname        = args.Name.Split(',')[0];
-            var assemblyFileName    = Path.Combine(GetAssemblyPath(), assemblyname + ".dll");
+            var assemblyFileName    = Path.Combine(AutoInstaller.AssemblyPath, assemblyname + ".dll");
             var assembly            = Assembly.LoadFrom(assemblyFileName);
             return assembly;
         }
@@ -84,17 +87,16 @@ namespace DotNetAutoInstaller
             this._firstExecution = this.IsFirstExecution();
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
         }
-        public static string GetApplicationDataFolder()
+        public static string ApplicationDataFolder
         {
-            var appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
-            var p       = CreateDir(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName));
-            p           = CreateDir(Path.Combine(p, GetVersion()));
+            get 
+            {
+                var appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
+                var p       = CreateDir(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName));
+                p           = CreateDir(Path.Combine(p, GetVersion()));
             
-            return p;
-        }
-        private string GetExecutable()
-        {
-            return Assembly.GetExecutingAssembly().Location;
+                return p;
+            }
         }
         private static string GetVersion()
         {
@@ -103,17 +105,23 @@ namespace DotNetAutoInstaller
             
             return vs;
         }    
-        private static string GetExecutableFolder()
+        private static string ExecutableFolder
         {
-            return System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            get 
+            {
+                return System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            }
         }
-        private string GetInstallInfoFile()
+        private static string InstallInfoFile
         {
-            return Path.Combine(GetApplicationDataFolder(), "DotNetAutoInstaller.json");
+            get
+            {
+                return Path.Combine(AutoInstaller.ApplicationDataFolder, "DotNetAutoInstaller.json");
+            }
         }
         private bool IsFirstExecution()
         {
-            return !System.IO.File.Exists(GetInstallInfoFile());
+            return !System.IO.File.Exists(AutoInstaller.InstallInfoFile);
         }
         const string InstallInfoJsonTemplate = @"{{ 
             ""InstallTime"" : ""{0}"",
@@ -122,7 +130,7 @@ namespace DotNetAutoInstaller
         }}";
         private void SaveInstallInfoFile()
         {
-            System.IO.File.WriteAllText(GetInstallInfoFile(), InstallInfoJsonTemplate.format(DateTime.UtcNow, Environment.UserName, Environment.MachineName));
+            System.IO.File.WriteAllText(AutoInstaller.InstallInfoFile, InstallInfoJsonTemplate.format(DateTime.UtcNow, Environment.UserName, Environment.MachineName));
         }
 
         // - - - - - API SECTION - - - - - - -
@@ -177,7 +185,7 @@ namespace DotNetAutoInstaller
         {
             if(_firstExecution)
             {
-                DS.Resources.SaveBinaryResourceAsFiles(Assembly.GetExecutingAssembly(), GetAssemblyPath(), assemblyFilenames);
+                DS.Resources.SaveBinaryResourceAsFiles(Assembly.GetExecutingAssembly(), AutoInstaller.AssemblyPath, assemblyFilenames);
             }
             return this;
         }
@@ -188,8 +196,8 @@ namespace DotNetAutoInstaller
                 string p = null;
                 switch(location)
                 {
-                    case Locations.ApplicationData : p = GetApplicationDataFolder(); break;
-                    case Locations.LocalFolder: p = GetExecutableFolder(); break;
+                    case Locations.ApplicationData : p = AutoInstaller.ApplicationDataFolder; break;
+                    case Locations.LocalFolder: p = AutoInstaller.ExecutableFolder; break;
                 }
                 if(SubFolder != null)
                 {
@@ -224,7 +232,7 @@ namespace DotNetAutoInstaller
             if(_firstExecution)
             {
                 this.Finish();
-                var p = ExecuteProgram(this.GetExecutable(), System.Environment.CommandLine, false, false);
+                var p = ExecuteProgram(Assembly.GetExecutingAssembly().Location, System.Environment.CommandLine, false, false);
                 System.Environment.Exit(exitCode);
             }
             return this;
