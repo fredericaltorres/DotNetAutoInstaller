@@ -29,6 +29,8 @@ assemblies dependencies and other files, including the application config file.
 
 # Road map
 - Create entry in start menu
+- Installation of the application in C:\Program Files (x86)
+    Automatically switch to elevated privilege
 - Support NT Service with auto registration on the first execution.
 
 # License
