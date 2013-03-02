@@ -33,7 +33,7 @@ assemblies dependencies and other files, including the application config file.
     Automatically switch to elevated privilege
 - Support NT Service with auto registration on the first execution.
 
-# License
+# License (MIT License)
 DotNetAutoInstaller
 Copyright (c) 2013 Frederic Torres
 
