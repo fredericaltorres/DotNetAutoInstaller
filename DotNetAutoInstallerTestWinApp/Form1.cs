@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,12 @@ namespace DotNetAutoInstallerTestWinApp
             {
                 var o = JObject.Parse(this.txtJSON.Text);
                 System.Windows.Forms.MessageBox.Show("Valid JSON");
+                var b = System.IO.File.Exists(Path.Combine(DotNetAutoInstaller.AutoInstaller.GetApplicationDataFolder(), @"Help\Help.markdown"));
+              
+                if(!b)
+                {
+                    throw new ApplicationException("Instllation not complete");
+                }
             }
             catch(System.Exception ex)
             {

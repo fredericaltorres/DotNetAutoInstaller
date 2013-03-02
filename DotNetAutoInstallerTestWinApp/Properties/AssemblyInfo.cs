@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DotNetAutoInstallerTestWinApp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("DotNetAutoInstaller demo app")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DotNetAutoInstallerTestWinApp")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyProduct("Dot Net AutoInstaller Test Win App")]
+[assembly: AssemblyCopyright("Copyright © Frederic Torres 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

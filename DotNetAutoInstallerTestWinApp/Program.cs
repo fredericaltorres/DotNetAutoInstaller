@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DotNetAutoInstaller;
 
 namespace DotNetAutoInstallerTestWinApp
 {
@@ -14,9 +15,15 @@ namespace DotNetAutoInstallerTestWinApp
         [STAThread]
         static void Main()
         {          
-            new DotNetAutoInstaller.AutoInstaller()
+            new  AutoInstaller()
+                .SetAssemblyLocation(Locations.ApplicationData)
+                .SetDataLocation(Locations.ApplicationData)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config");
+                .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help")
+                .DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
+                .Finish();
                
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>DotNetAutoInstaller.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DynamicSugar">
       <HintPath>..\packages\DynamicSugar.0.1.10.0\lib\DynamicSugar.dll</HintPath>
@@ -41,6 +44,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -98,6 +102,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Installer\Dll\Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DotNetAutoInstaller.ico" />
+    <Content Include="DotNetAutoInstaller.txt" />
+    <Content Include="Icons\DotNetAutoInstaller.ico" />
+    <EmbeddedResource Include="Installer\Help\Help.markdown" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

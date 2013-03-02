@@ -1,0 +1,4 @@
+﻿
+
+# Windows Special Folder
+.microsoft.com/en-us/library/system.environment.specialfolder.aspx

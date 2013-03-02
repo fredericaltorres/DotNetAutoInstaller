@@ -13,9 +13,14 @@ assemblies dependencies and other files, including the application config file.
         [STAThread]
         static void Main()  
         {          
-            new DotNetAutoInstaller.AutoInstaller()
+           new  AutoInstaller()
+                .SetAssemblyLocation(Locations.ApplicationData)
+                .SetDataLocation(Locations.ApplicationData)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config");
+                .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help")
+                .DeployFiles(@"Help.markdown")
+                .Finish();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -23,12 +28,8 @@ assemblies dependencies and other files, including the application config file.
         }
 
 # Road map
-- Deploy assemblies dependencies in a non local folder if requested programmatically or
-  if no write access locally.
-- Do not deploy assemblies locally if the application is executing from the Desktop.
+- Create entry in start menu
 - Support NT Service with auto registration on the first execution.
-
-
 
 # License
 DotNetAutoInstaller
