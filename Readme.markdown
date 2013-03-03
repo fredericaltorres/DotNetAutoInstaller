@@ -2,24 +2,56 @@
 ===================
 
 # Overview
-DotNetAutoInstaller.cs is a C# class to create auto installable C# Console and
-Windows application.
+DotNetAutoInstaller.cs is a C# class to create auto installable C# Console,
+Windows application and Windows Service.
 
-By simply executing the application the first time, the application auto extract
-assemblies dependencies and other files, including the application config file.
+STILL IN BETA
+
+By simply executing the application the first time, the application 
+
+- Copy itself to a specific location (Optional)
+- Auto extract assemblies dependencies
+- Auto extract application config file.
+- Auto extract data files in current or sub folder
+- Create an icon on the desktop
+- Create entries in the start menu (Not implemented yet)
 
 # Syntax
+
+## Execution in current location 
+The exe will run in the current location. Assemblies and data files
+will be copied to folder C:\Users\ [Username]\ AppData\ Roaming\ [Application-Name]\ [Version]\
 
         [STAThread]
         static void Main()  
         {          
-           new  AutoInstaller()
-                .SetAssemblyLocation(Locations.ApplicationData)
-                .SetDataLocation(Locations.ApplicationData)
+            new AutoInstaller()
+                .SetLocations(Locations.ApplicationData)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
-                .SetDataSubFolder("Help")
-                .DeployFiles(@"Help.markdown")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
+                .Finish();
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
+        }
+
+## Installation in C:\Program Files(x86)\ [Application-Name]\ [Version]
+On the first execution the exe is copied in folder C:\Program Files(x86)\Application-Name,
+then the assemblies and data file are extracted in the local folder.
+
+        [STAThread]
+        static void Main()  
+        {          
+            new  AutoInstaller()
+                .SetLocations(Locations.LocalFolder)
+                .CopyToProgramFiles()
+                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
                 .Finish();
 
             Application.EnableVisualStyles();

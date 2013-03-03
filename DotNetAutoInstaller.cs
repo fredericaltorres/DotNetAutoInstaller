@@ -51,11 +51,56 @@ namespace DotNetAutoInstaller
     internal class AutoInstaller
     {
         private bool _firstExecution                = false;
+        private List<string> _errors                = new List<string>();
         
         public static Locations AssemblyLocation    = Locations.ApplicationData;
         public static Locations DataLocation        = Locations.ApplicationData;
         public static string SubFolder              = null;
         
+        public AutoInstaller(Locations allLocation) 
+        {
+            AssemblyLocation        = allLocation;
+            DataLocation            = allLocation;
+            this._firstExecution    = this.IsFirstExecution();
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
+        }
+        public AutoInstaller(Locations assemblyLocation, Locations dataLocation) 
+        {
+            AssemblyLocation        = assemblyLocation;
+            DataLocation            = dataLocation;
+            this._firstExecution    = this.IsFirstExecution();
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
+        }
+        private static bool CopyFile(string s, string d)
+        {   
+            if(System.IO.File.Exists(s))
+            {
+                try
+                {
+                    System.IO.File.Copy(s, d);
+                    return true;
+                }
+                catch
+                {
+                }
+            }
+            return false;
+        }
+        private static bool DeleteFileIfExist(string p)
+        {   
+            if(System.IO.File.Exists(p))
+            {
+                try
+                {
+                    System.IO.File.Delete(p);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         private static string CreateDir(string p)
         {   
             if(!System.IO.Directory.Exists(p))
@@ -75,6 +120,25 @@ namespace DotNetAutoInstaller
                 return CreateDir(p);
             }
         }
+        public static string ApplicationDataFolder
+        {
+            get 
+            {
+                var p = String.Empty;
+                switch(AssemblyLocation)
+                {
+                    case Locations.ApplicationData: 
+                        var appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
+                        p           = CreateDir(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName));
+                        p           = CreateDir(Path.Combine(p, GetVersion()));
+                    break;
+                    case Locations.LocalFolder: 
+                        p = AutoInstaller.ExecutableFolder; 
+                    break;
+                }
+                return p;
+            }
+        }
         static Assembly __AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var assemblyname        = args.Name.Split(',')[0];
@@ -82,27 +146,41 @@ namespace DotNetAutoInstaller
             var assembly            = Assembly.LoadFrom(assemblyFileName);
             return assembly;
         }
-        public AutoInstaller() 
+        
+        public bool ErrorFound 
         {
-            this._firstExecution = this.IsFirstExecution();
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
+            get
+            {
+                return this._errors.Count > 0;
+            }
         }
-        public static string ApplicationDataFolder
+        private void AddError(string message)
+        {
+            this._errors.Add(message);
+            Util.MsgBoxError(message);
+        }
+        public static string ProgramFilesFolder
         {
             get 
             {
-                var appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
-                var p       = CreateDir(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName));
-                p           = CreateDir(Path.Combine(p, GetVersion()));
-            
-                return p;
+                return Environment.Is64BitOperatingSystem ? Environment.GetEnvironmentVariable("ProgramFiles(x86)") :
+                                                            Environment.GetEnvironmentVariable("ProgramFiles");
             }
+        }
+        private static string GetVersion(string assemblyName)
+        {
+            if(System.IO.File.Exists(assemblyName))
+            {
+                var v   = AssemblyName.GetAssemblyName(assemblyName).Version;
+                var vs  = "{0}.{1}.{2}-{3}.{4}".format(v.Major, v.Minor, v.MajorRevision, v.MinorRevision, v.Build);
+                return vs;
+            }
+            return null;
         }
         private static string GetVersion()
         {
-            Version v   = Assembly.GetEntryAssembly().GetName().Version;
-            var vs      = "{0}.{1}.{2}-{3}.{4}".format(v.Major, v.Minor, v.MajorRevision, v.MinorRevision, v.Build);
-            
+            var v  = Assembly.GetEntryAssembly().GetName().Version;
+            var vs = "{0}.{1}.{2}-{3}.{4}".format(v.Major, v.Minor, v.MajorRevision, v.MinorRevision, v.Build);
             return vs;
         }    
         private static string ExecutableFolder
@@ -137,7 +215,7 @@ namespace DotNetAutoInstaller
 
         public AutoInstaller CreateShortcutToDesktop(string appName = null)
         {
-            if(_firstExecution)
+            if(this._firstExecution && !this.ErrorFound)
             {
                 if(appName == null)
                 {
@@ -166,6 +244,12 @@ namespace DotNetAutoInstaller
 
             return this;
         }
+        public AutoInstaller SetLocations(Locations location)
+        {
+            SetAssemblyLocation(location);
+            SetDataLocation(location);
+            return this;
+        }
         public AutoInstaller SetAssemblyLocation(Locations location)
         {
             AssemblyLocation = location;
@@ -181,9 +265,59 @@ namespace DotNetAutoInstaller
             SubFolder = subFolder;
             return this;
         }
+        public AutoInstaller CopyToProgramFiles(string appName = null)
+        {
+            if(this._firstExecution && !this.ErrorFound)
+            {
+                if(appName == null)
+                    appName = System.Windows.Forms.Application.ProductName;
+
+                var curExe      = Assembly.GetExecutingAssembly().Location;
+                var appFolder   = CreateDir(Path.Combine(AutoInstaller.ProgramFilesFolder, appName));
+                var exeName     = Path.GetFileName(curExe);
+                var fullExeName = Path.Combine(appFolder, exeName);
+                
+                // File already exist we are going to compare the version, we use the .net version
+                if(System.IO.File.Exists(fullExeName))
+                {
+                    var fileAlreadyThereVersion = AutoInstaller.GetVersion(fullExeName);
+
+                    if(string.Compare(fileAlreadyThereVersion, AutoInstaller.GetVersion())==-1)
+                    {
+                        if(AutoInstaller.DeleteFileIfExist(fullExeName))
+                        {
+                            // No error so we will copy the file, see below
+                        }
+                        else
+                        {
+                            this.AddError("Cannot delete file:{0}".format(fullExeName));
+                        }
+                    }
+                    else
+                    {
+                        // Already installed do nothing. Plus when the app is copied and re started
+                        // we will hit this else.
+                        return this;
+                    }
+                }
+
+                if(!this.ErrorFound)
+                {
+                    if(AutoInstaller.CopyFile(curExe, fullExeName))
+                    {
+                        this.StartProcessAndShutDown(fullExeName, "", 0);
+                    }
+                    else
+                    {
+                        this.AddError("Cannot copy file:'{0}' to '{1}'".format(curExe, fullExeName));
+                    }
+                }
+            }
+            return this;
+        }
         public AutoInstaller DeployAssemblies(params string[] assemblyFilenames)
         {
-            if(_firstExecution)
+            if(this._firstExecution && !this.ErrorFound)
             {
                 DS.Resources.SaveBinaryResourceAsFiles(Assembly.GetExecutingAssembly(), AutoInstaller.AssemblyPath, assemblyFilenames);
             }
@@ -191,7 +325,7 @@ namespace DotNetAutoInstaller
         }
         public AutoInstaller DeployFiles(Locations location, params string[] textFiles)
         {
-            if(_firstExecution)
+           if(this._firstExecution && !this.ErrorFound)
             {
                 string p = null;
                 switch(location)
@@ -214,7 +348,7 @@ namespace DotNetAutoInstaller
         }
         public AutoInstaller RequireElevatedPrivileges(params string[] textFiles)
         {
-            if(_firstExecution)
+            if(this._firstExecution && !this.ErrorFound)
             {
                 UACHelper.UacHelper.StartProcessWithElevatedPrivilegeIfNeeded();
             }
@@ -222,14 +356,19 @@ namespace DotNetAutoInstaller
         }
         public void Finish()
         {
-            if(_firstExecution)
+            if(this._firstExecution && !this.ErrorFound)
             {
                 this.SaveInstallInfoFile();              
             }
         }
+        private void StartProcessAndShutDown(string program, string commandLine, int exitCode = 0)
+        {
+            var p = ExecuteProgram(program, commandLine, false, false);
+            System.Environment.Exit(exitCode);
+        }
         public AutoInstaller RebootOnFirstExecution(int exitCode = 0)
         {
-            if(_firstExecution)
+            if(this._firstExecution && !this.ErrorFound)
             {
                 this.Finish();
                 var p = ExecuteProgram(Assembly.GetExecutingAssembly().Location, System.Environment.CommandLine, false, false);
@@ -263,6 +402,40 @@ namespace DotNetAutoInstaller
         }
     }
 
+
+    #region Util
+    internal static class Constants 
+    {
+        public const string Version = "0.1";
+        public const string DotNetAutoInstaller = "Dot Net Auto Installer";
+    }
+    internal static class Util 
+    {
+        public static void MsgBox(string message) 
+        {
+            System.Windows.Forms.MessageBox.Show(message, Constants.DotNetAutoInstaller);
+        }
+        public static void MsgBoxError(System.Exception ex, string message = null)
+        {
+            if (message == null)
+            {
+                System.Windows.Forms.MessageBox.Show("Error:{0}\r\n{1}".format(ex.Message, ex.ToString()), Constants.DotNetAutoInstaller, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
+            else 
+            {
+                System.Windows.Forms.MessageBox.Show("Error:{0}\r\n{1}".format(message, ex.Message, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error));
+            }
+        }
+        public static void MsgBoxError(string message)
+        {
+            System.Windows.Forms.MessageBox.Show("Error:{0}".format(message), Constants.DotNetAutoInstaller, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);            
+        }
+        public static bool MsgBoxYesNo(string message)
+        {
+            return System.Windows.Forms.MessageBox.Show(message, Constants.DotNetAutoInstaller, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes;
+        }
+    }
+    #endregion
 
     #region DynamicSugar
     /// <summary>

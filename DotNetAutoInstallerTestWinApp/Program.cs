@@ -15,16 +15,24 @@ namespace DotNetAutoInstallerTestWinApp
         [STAThread]
         static void Main()
         {          
-            new  AutoInstaller()
-                .SetAssemblyLocation(Locations.ApplicationData)
-                .SetDataLocation(Locations.ApplicationData)
+            //System.Diagnostics.Debugger.Break();
+
+            new AutoInstaller(Locations.LocalFolder)
+                .CopyToProgramFiles()
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
-                .SetDataSubFolder("Help")
-                .DeployFiles(@"Help.markdown")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
                 .CreateShortcutToDesktop()
                 .Finish();
-               
+
+            /*
+            new AutoInstaller(Locations.LocalFolder)
+                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+                .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
+                .Finish();
+             */
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
