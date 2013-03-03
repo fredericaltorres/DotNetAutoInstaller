@@ -16,23 +16,23 @@ namespace DotNetAutoInstallerTestWinApp
         static void Main()
         {          
             //System.Diagnostics.Debugger.Break();
-
+            /*
             new AutoInstaller(Locations.LocalFolder)
                 .CopyToProgramFiles()
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
                 .CreateShortcutToDesktop()
-                .Finish();
+                .Finish();*/
 
-            /*
-            new AutoInstaller(Locations.LocalFolder)
+         
+            new AutoInstaller(Locations.ApplicationDataFolder)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
                 .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
                 .CreateShortcutToDesktop()
                 .Finish();
-             */
+           
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());

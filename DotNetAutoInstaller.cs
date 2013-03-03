@@ -41,7 +41,7 @@ namespace DotNetAutoInstaller
     public enum Locations
     {
         LocalFolder,
-        ApplicationData,
+        ApplicationDataFolder,
         Undefied,
     };
 
@@ -53,21 +53,24 @@ namespace DotNetAutoInstaller
         private bool _firstExecution                = false;
         private List<string> _errors                = new List<string>();
         
-        public static Locations AssemblyLocation    = Locations.ApplicationData;
-        public static Locations DataLocation        = Locations.ApplicationData;
+        public static Locations AssemblyLocation    = Locations.ApplicationDataFolder;
+        public static Locations DataLocation        = Locations.ApplicationDataFolder;
         public static string SubFolder              = null;
         
         public AutoInstaller(Locations allLocation) 
         {
             AssemblyLocation        = allLocation;
             DataLocation            = allLocation;
-            this._firstExecution    = this.IsFirstExecution();
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
+            this.Init();
         }
         public AutoInstaller(Locations assemblyLocation, Locations dataLocation) 
         {
             AssemblyLocation        = assemblyLocation;
             DataLocation            = dataLocation;
+            this.Init();
+        }
+        private void Init()
+        {
             this._firstExecution    = this.IsFirstExecution();
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(__AssemblyResolve);
         }
@@ -105,6 +108,7 @@ namespace DotNetAutoInstaller
         {   
             if(!System.IO.Directory.Exists(p))
                 System.IO.Directory.CreateDirectory(p);
+
             return p;
         }
         private static string AssemblyPath
@@ -114,8 +118,8 @@ namespace DotNetAutoInstaller
                 var p = AutoInstaller.ExecutableFolder;
                 switch(AssemblyLocation)
                 {
-                    case Locations.ApplicationData: p = Path.Combine(AutoInstaller.ApplicationDataFolder, "Bin"); break;
-                    case Locations.LocalFolder:     p = AutoInstaller.ExecutableFolder; break;
+                    case Locations.ApplicationDataFolder: p = Path.Combine(AutoInstaller.ApplicationDataFolder, "Bin");   break;
+                    case Locations.LocalFolder:     p = AutoInstaller.ExecutableFolder;                             break;
                 }
                 return CreateDir(p);
             }
@@ -127,8 +131,8 @@ namespace DotNetAutoInstaller
                 var p = String.Empty;
                 switch(AssemblyLocation)
                 {
-                    case Locations.ApplicationData: 
-                        var appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
+                    case Locations.ApplicationDataFolder: 
+                        var appName = System.Windows.Forms.Application.ProductName;
                         p           = CreateDir(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName));
                         p           = CreateDir(Path.Combine(p, GetVersion()));
                     break;
@@ -146,7 +150,6 @@ namespace DotNetAutoInstaller
             var assembly            = Assembly.LoadFrom(assemblyFileName);
             return assembly;
         }
-        
         public bool ErrorFound 
         {
             get
@@ -234,35 +237,12 @@ namespace DotNetAutoInstaller
             }
             return this;
         }
-        public AutoInstaller SetLocations(Locations assemblylocation = Locations.Undefied, Locations dataLocation = Locations.Undefied)
-        {
-            if(assemblylocation != Locations.Undefied)
-                AssemblyLocation = assemblylocation;
-
-            if(dataLocation != Locations.Undefied)
-                DataLocation = dataLocation;
-
-            return this;
-        }
-        public AutoInstaller SetLocations(Locations location)
-        {
-            SetAssemblyLocation(location);
-            SetDataLocation(location);
-            return this;
-        }
-        public AutoInstaller SetAssemblyLocation(Locations location)
-        {
-            AssemblyLocation = location;
-            return this;
-        }
-        public AutoInstaller SetDataLocation(Locations location)
-        {
-            DataLocation = location;
-            return this;
-        }
         public AutoInstaller SetDataSubFolder(string subFolder)
         {
-            SubFolder = subFolder;
+            if(this._firstExecution && !this.ErrorFound)
+            {
+                SubFolder = subFolder;
+            }
             return this;
         }
         public AutoInstaller CopyToProgramFiles(string appName = null)
@@ -284,6 +264,8 @@ namespace DotNetAutoInstaller
 
                     if(string.Compare(fileAlreadyThereVersion, AutoInstaller.GetVersion())==-1)
                     {
+                        this.RequireElevatedPrivileges();
+
                         if(AutoInstaller.DeleteFileIfExist(fullExeName))
                         {
                             // No error so we will copy the file, see below
@@ -300,9 +282,10 @@ namespace DotNetAutoInstaller
                         return this;
                     }
                 }
-
                 if(!this.ErrorFound)
                 {
+                    this.RequireElevatedPrivileges();
+
                     if(AutoInstaller.CopyFile(curExe, fullExeName))
                     {
                         this.StartProcessAndShutDown(fullExeName, "", 0);
@@ -330,7 +313,7 @@ namespace DotNetAutoInstaller
                 string p = null;
                 switch(location)
                 {
-                    case Locations.ApplicationData : p = AutoInstaller.ApplicationDataFolder; break;
+                    case Locations.ApplicationDataFolder : p = AutoInstaller.ApplicationDataFolder; break;
                     case Locations.LocalFolder: p = AutoInstaller.ExecutableFolder; break;
                 }
                 if(SubFolder != null)
@@ -343,10 +326,9 @@ namespace DotNetAutoInstaller
         }
         public AutoInstaller DeployFiles(params string[] textFiles)
         {
-            DeployFiles(Locations.ApplicationData, textFiles);
-            return this;
+            return DeployFiles(Locations.ApplicationDataFolder, textFiles);
         }
-        public AutoInstaller RequireElevatedPrivileges(params string[] textFiles)
+        public AutoInstaller RequireElevatedPrivileges()
         {
             if(this._firstExecution && !this.ErrorFound)
             {

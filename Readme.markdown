@@ -25,8 +25,7 @@ will be copied to folder C:\Users\ [Username]\ AppData\ Roaming\ [Application-Na
         [STAThread]
         static void Main()  
         {          
-            new AutoInstaller()
-                .SetLocations(Locations.ApplicationData)
+            new AutoInstaller(Locations.ApplicationData)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
                 .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
