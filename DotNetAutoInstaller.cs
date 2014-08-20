@@ -42,7 +42,8 @@ namespace DotNetAutoInstaller
     {
         LocalFolder,
         ApplicationDataFolder,
-        Undefied,
+        TempFolder,
+        Undefined,
     };
 
     /// <summary>
@@ -56,11 +57,14 @@ namespace DotNetAutoInstaller
         public static Locations AssemblyLocation    = Locations.ApplicationDataFolder;
         public static Locations DataLocation        = Locations.ApplicationDataFolder;
         public static string SubFolder              = null;
+
+        private static string TempFolderName;
         
-        public AutoInstaller(Locations allLocation) 
+        public AutoInstaller(Locations allLocation, string tempFolderName = null) 
         {
             AssemblyLocation        = allLocation;
             DataLocation            = allLocation;
+            TempFolderName          = tempFolderName;
             this.Init();
         }
         public AutoInstaller(Locations assemblyLocation, Locations dataLocation) 
@@ -118,11 +122,40 @@ namespace DotNetAutoInstaller
                 var p = AutoInstaller.ExecutableFolder;
                 switch(AssemblyLocation)
                 {
+                        
                     case Locations.ApplicationDataFolder: p = Path.Combine(AutoInstaller.ApplicationDataFolder, "Bin");   break;
-                    case Locations.LocalFolder:     p = AutoInstaller.ExecutableFolder;                             break;
+                    case Locations.LocalFolder:           p = AutoInstaller.ExecutableFolder;                             break;
+                    case Locations.TempFolder:            p = AutoInstaller.GetTempFolder();                              break;
                 }
                 return CreateDir(p);
             }
+        }
+        private static string GetTempFolder()
+        {
+            var tempFullName = Path.Combine(Environment.GetEnvironmentVariable("TEMP"), TempFolderName);
+            //try
+            //{
+            //    if (Directory.Exists(tempFullName))
+            //    {
+            //        Directory.Delete(tempFullName, true);
+            //    }
+            //}
+            //catch(System.Exception ex)
+            //{
+            //    Debug.WriteLine(ex.ToString());
+            //}
+            //try
+            //{
+            //    if (!Directory.Exists(tempFullName))
+            //    {
+            //        Directory.CreateDirectory(tempFullName);
+            //    }
+            //}
+            //catch(System.Exception ex)
+            //{
+            //    Debug.WriteLine(ex.ToString());
+            //}
+            return tempFullName;
         }
         public static string ApplicationDataFolder
         {
@@ -139,7 +172,13 @@ namespace DotNetAutoInstaller
                     case Locations.LocalFolder: 
                         p = AutoInstaller.ExecutableFolder; 
                     break;
+                    case Locations.TempFolder:
+                        p = Path.Combine(AutoInstaller.AssemblyPath, "Data");
+                    break;
                 }
+                if (!Directory.Exists(p))
+                    Directory.CreateDirectory(p);
+
                 return p;
             }
         }
@@ -215,6 +254,12 @@ namespace DotNetAutoInstaller
         }
 
         // - - - - - API SECTION - - - - - - -
+
+        //public AutoInstaller SetTempFolderName(string tempFolderName)
+        //{
+        //    TempFolderName = tempFolderName;
+        //    return this;
+        //}
 
         public AutoInstaller CreateShortcutToDesktop(string appName = null)
         {
@@ -300,7 +345,8 @@ namespace DotNetAutoInstaller
         }
         public AutoInstaller DeployAssemblies(params string[] assemblyFilenames)
         {
-            if(this._firstExecution && !this.ErrorFound)
+            //if(this._firstExecution && !this.ErrorFound)
+            if(!this.ErrorFound)
             {
                 DS.Resources.SaveBinaryResourceAsFiles(Assembly.GetExecutingAssembly(), AutoInstaller.AssemblyPath, assemblyFilenames);
             }

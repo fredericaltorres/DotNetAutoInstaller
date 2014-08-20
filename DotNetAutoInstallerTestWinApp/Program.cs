@@ -23,12 +23,19 @@ namespace DotNetAutoInstallerTestWinApp
                 .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
                 .CreateShortcutToDesktop()
-                .Finish();*/
-
-         
+                .Finish();
+                        
             new AutoInstaller(Locations.ApplicationDataFolder)
                 .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
                 .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
+                .Finish();
+             */
+
+            new AutoInstaller(Locations.TempFolder, "DotNetAutoInstallerTestWinApp")
+                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
                 .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
                 .CreateShortcutToDesktop()
                 .Finish();

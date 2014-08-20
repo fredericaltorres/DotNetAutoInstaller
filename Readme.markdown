@@ -18,6 +18,26 @@ By simply executing the application the first time, the application
 
 # Syntax
 
+## Execution in current location deploy dependencies in %TEMP%\DotNetAutoInstallerTestWinApp
+The exe will run in the current location. 
+Assemblies will be copied to folder %TEMP%\DotNetAutoInstallerTestWinApp
+Data file will be copied to folder %TEMP%\DotNetAutoInstallerTestWinApp\Data
+
+        [STAThread]
+        static void Main()  
+        {          
+            new AutoInstaller(Locations.TempFolder, "DotNetAutoInstallerTestWinApp")
+                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
+                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+                .CreateShortcutToDesktop()
+                .Finish();
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
+        }
+
 ## Execution in current location 
 The exe will run in the current location. Assemblies and data files
 will be copied to folder C:\Users\ [Username]\ AppData\ Roaming\ [Application-Name]\ [Version]\
