@@ -44,41 +44,45 @@ static void Main()
 The exe will run in the current location. Assemblies and data files
 will be copied to folder C:\Users\ [Username]\ AppData\ Roaming\ [Application-Name]\ [Version]\
 
-        [STAThread]
-        static void Main()  
-        {          
-            new AutoInstaller(Locations.ApplicationData)
-                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
-                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
-                .CreateShortcutToDesktop()
-                .Finish();
+```cs
+[STAThread]
+static void Main()  
+{          
+    new AutoInstaller(Locations.ApplicationData)
+        .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+        .DeployFiles(Locations.LocalFolder, "DotNetAutoInstallerTestWinApp.exe.config")
+        .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+        .CreateShortcutToDesktop()
+        .Finish();
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
-        }
+    Application.EnableVisualStyles();
+    Application.SetCompatibleTextRenderingDefault(false);
+    Application.Run(new Form1());
+}
+```
 
 ## Installation in C:\Program Files(x86)\ [Application-Name]\ [Version]
 On the first execution the exe is copied in folder C:\Program Files(x86)\Application-Name,
 then the assemblies and data file are extracted in the local folder.
 
-        [STAThread]
-        static void Main()  
-        {          
-            new  AutoInstaller()
-                .SetLocations(Locations.LocalFolder)
-                .CopyToProgramFiles()
-                .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
-                .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
-                .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
-                .CreateShortcutToDesktop()
-                .Finish();
+```cs
+[STAThread]
+static void Main()  
+{          
+    new  AutoInstaller()
+        .SetLocations(Locations.LocalFolder)
+        .CopyToProgramFiles()
+        .DeployAssemblies("Newtonsoft.Json.dll", "DynamicSugar.dll")
+        .DeployFiles("DotNetAutoInstallerTestWinApp.exe.config")
+        .SetDataSubFolder("Help").DeployFiles(@"Help.markdown")
+        .CreateShortcutToDesktop()
+        .Finish();
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
-        }
+    Application.EnableVisualStyles();
+    Application.SetCompatibleTextRenderingDefault(false);
+    Application.Run(new Form1());
+}
+```
 
 # Road map
 - Create entry in start menu
